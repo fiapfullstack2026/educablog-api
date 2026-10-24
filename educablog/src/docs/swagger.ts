@@ -23,6 +23,23 @@ export const swaggerDocument = {
       },
     },
     schemas: {
+      User: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string', example: '665a1b2c3d4e5f6a7b8c9d0e' },
+          username: { type: 'string', example: 'maria' },
+          isTeacher: { type: 'boolean', example: true },
+          createdAt: { type: 'string', format: 'date-time' },
+        },
+      },
+      UserUpdateInput: {
+        type: 'object',
+        properties: {
+          username: { type: 'string', example: 'maria' },
+          password: { type: 'string', example: 'nova-senha' },
+          isTeacher: { type: 'boolean', example: true },
+        },
+      },
       Post: {
         type: 'object',
         properties: {
@@ -231,6 +248,129 @@ export const swaggerDocument = {
               },
             },
           },
+        },
+      },
+    },
+    '/user': {
+      get: {
+        tags: ['Usuários'],
+        summary: 'Lista usuários (somente professores)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'query',
+            name: 'isTeacher',
+            required: false,
+            schema: { type: 'boolean' },
+            description: 'Filtra por professores (true) ou alunos (false)',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Lista retornada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    count: { type: 'integer' },
+                    data: {
+                      type: 'array',
+                      items: { $ref: '#/components/schemas/User' },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Token não informado ou inválido' },
+          403: { description: 'Acesso restrito a professores' },
+        },
+      },
+    },
+    '/user/{id}': {
+      get: {
+        tags: ['Usuários'],
+        summary: 'Retorna um usuário pelo ID (somente professores)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID do usuário',
+          },
+        ],
+        responses: {
+          200: {
+            description: 'Usuário encontrado',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: { $ref: '#/components/schemas/User' },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Token não informado ou inválido' },
+          403: { description: 'Acesso restrito a professores' },
+          404: { description: 'Usuário não encontrado' },
+        },
+      },
+      put: {
+        tags: ['Usuários'],
+        summary: 'Atualiza um usuário (somente professores)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID do usuário',
+          },
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserUpdateInput' },
+            },
+          },
+        },
+        responses: {
+          204: { description: 'Usuário atualizado' },
+          400: { description: 'Dados inválidos' },
+          401: { description: 'Token não informado ou inválido' },
+          403: { description: 'Acesso restrito a professores' },
+          404: { description: 'Usuário não encontrado' },
+          409: { description: 'Usuário com este username e perfil já existe' },
+        },
+      },
+      delete: {
+        tags: ['Usuários'],
+        summary: 'Remove um usuário (somente professores)',
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            in: 'path',
+            name: 'id',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID do usuário',
+          },
+        ],
+        responses: {
+          204: { description: 'Usuário removido' },
+          401: { description: 'Token não informado ou inválido' },
+          403: { description: 'Acesso restrito a professores' },
+          404: { description: 'Usuário não encontrado' },
         },
       },
     },

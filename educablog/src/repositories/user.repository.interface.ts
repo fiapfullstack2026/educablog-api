@@ -8,4 +8,8 @@ export interface IUserRepository {
     isTeacher: boolean,
   ): Promise<IUser | undefined>
   signIn(username: string): Promise<IUser | undefined>
+  findById(id: string): Promise<IUser | undefined>
+  findAll(filter?: { isTeacher?: boolean }): Promise<IUser[]>
+  update(id: string, data: Partial<IUser>): Promise<IUser | undefined>
+  delete(id: string): Promise<IUser | undefined>
 }

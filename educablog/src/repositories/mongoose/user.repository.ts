@@ -27,4 +27,34 @@ export class UserRepository implements IUserRepository {
   async create(user: IUser): Promise<IUser> {
     return (await new UserModel(user).save()) as unknown as IUser
   }
+
+  async findById(id: string): Promise<IUser | undefined> {
+    return (
+      (await UserModel.findById(id).select('-password').lean()) || undefined
+    )
+  }
+
+  async findAll(filter: { isTeacher?: boolean } = {}): Promise<IUser[]> {
+    const query =
+      filter.isTeacher === undefined ? {} : { isTeacher: filter.isTeacher }
+    return (await UserModel.find(query)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .lean()) as unknown as IUser[]
+  }
+
+  async update(id: string, data: Partial<IUser>): Promise<IUser | undefined> {
+    return (
+      (await UserModel.findByIdAndUpdate(id, data, { returnDocument: 'after' })
+        .select('-password')
+        .lean()) || undefined
+    )
+  }
+
+  async delete(id: string): Promise<IUser | undefined> {
+    return (
+      (await UserModel.findByIdAndDelete(id).select('-password').lean()) ||
+      undefined
+    )
+  }
 }

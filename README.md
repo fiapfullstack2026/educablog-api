@@ -109,6 +109,13 @@ Os testes ficam em `test/` e o relatório de cobertura é gerado em `test/report
 - `POST /user/register` — cadastra um novo usuário (`username`, `password`, `isTeacher?`). Retorna `201`.
 - `POST /user/signin` — autentica e retorna um token JWT. Retorna `200`.
 
+### Usuários (somente professores)
+
+- `GET /user?isTeacher=true|false` — lista usuários (filtro opcional por perfil). Alunos recebem `403`.
+- `GET /user/:id` — retorna um usuário pelo id.
+- `PUT /user/:id` — atualiza `username`, `password` e/ou `isTeacher`. Retorna `204`.
+- `DELETE /user/:id` — remove um usuário. Retorna `204`.
+
 ### Posts
 
 - `GET /post/` — lista todos os posts.
