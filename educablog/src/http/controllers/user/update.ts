@@ -11,6 +11,13 @@ export async function update(req: Request, res: Response) {
   const { id } = z.object({ id: z.string() }).parse(req.params)
   const data = bodySchema.parse(req.body)
 
+  if (!res.locals.user?.isTeacher && data.isTeacher !== undefined) {
+    return res.status(403).send({
+      success: false,
+      message: 'Apenas professores podem alterar o perfil de acesso',
+    })
+  }
+
   await makeUpdateUserUseCase().handler(id, data)
 
   return res.status(204).send()

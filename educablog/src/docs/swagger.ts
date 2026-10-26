@@ -254,7 +254,7 @@ export const swaggerDocument = {
     '/user': {
       get: {
         tags: ['Usuários'],
-        summary: 'Lista usuários (somente professores)',
+        summary: 'Lista usuários (professor: todos; aluno: somente ele mesmo)',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -285,14 +285,14 @@ export const swaggerDocument = {
             },
           },
           401: { description: 'Token não informado ou inválido' },
-          403: { description: 'Acesso restrito a professores' },
+          403: { description: 'Token sem id; refaça o login' },
         },
       },
     },
     '/user/{id}': {
       get: {
         tags: ['Usuários'],
-        summary: 'Retorna um usuário pelo ID (somente professores)',
+        summary: 'Retorna um usuário pelo ID (professor: qualquer; aluno: somente o próprio)',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -319,13 +319,13 @@ export const swaggerDocument = {
             },
           },
           401: { description: 'Token não informado ou inválido' },
-          403: { description: 'Acesso restrito a professores' },
+          403: { description: 'Aluno acessando outro usuário' },
           404: { description: 'Usuário não encontrado' },
         },
       },
       put: {
         tags: ['Usuários'],
-        summary: 'Atualiza um usuário (somente professores)',
+        summary: 'Atualiza um usuário (professor: qualquer; aluno: somente o próprio, sem alterar isTeacher)',
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -348,7 +348,7 @@ export const swaggerDocument = {
           204: { description: 'Usuário atualizado' },
           400: { description: 'Dados inválidos' },
           401: { description: 'Token não informado ou inválido' },
-          403: { description: 'Acesso restrito a professores' },
+          403: { description: 'Aluno acessando outro usuário ou alterando isTeacher' },
           404: { description: 'Usuário não encontrado' },
           409: { description: 'Usuário com este username e perfil já existe' },
         },

@@ -14,7 +14,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   const jwtSecret = process.env.JWT_SECRET || 'dev-secret'
 
   try {
-    res.locals.user = jwt.verify(token, jwtSecret) as { isTeacher: boolean }
+    res.locals.user = jwt.verify(token, jwtSecret) as { id?: string; isTeacher: boolean }
     next()
   } catch {
     return res
@@ -30,4 +30,19 @@ export function authorize(_req: Request, res: Response, next: NextFunction) {
       .send({ success: false, message: 'Acesso restrito a professores' })
   }
   next()
+}
+
+export function authorizeSelfOrTeacher(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
+  const user = res.locals.user
+  if (user?.isTeacher || (user?.id && user.id === req.params.id)) {
+    return next()
+  }
+  return res.status(403).send({
+    success: false,
+    message: 'Acesso permitido apenas ao próprio usuário ou a professores',
+  })
 }
