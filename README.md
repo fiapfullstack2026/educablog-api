@@ -109,12 +109,14 @@ Os testes ficam em `test/` e o relatório de cobertura é gerado em `test/report
 - `POST /user/register` — cadastra um novo usuário (`username`, `password`, `isTeacher?`). Retorna `201`.
 - `POST /user/signin` — autentica e retorna um token JWT. Retorna `200`.
 
-### Usuários (somente professores)
+### Usuários (autenticados)
 
-- `GET /user?isTeacher=true|false` — lista usuários (filtro opcional por perfil). Alunos recebem `403`.
-- `GET /user/:id` — retorna um usuário pelo id.
-- `PUT /user/:id` — atualiza `username`, `password` e/ou `isTeacher`. Retorna `204`.
-- `DELETE /user/:id` — remove um usuário. Retorna `204`.
+Professores (`isTeacher = true`) acessam qualquer usuário; alunos acessam apenas o próprio cadastro.
+
+- `GET /user?isTeacher=true|false` — professor: lista usuários (filtro opcional por perfil). Aluno: retorna somente ele mesmo.
+- `GET /user/:id` — retorna um usuário pelo id. Aluno só no próprio id, senão `403`.
+- `PUT /user/:id` — atualiza `username`, `password` e/ou `isTeacher`. Retorna `204`. Aluno só no próprio id e não pode alterar `isTeacher` (`403`).
+- `DELETE /user/:id` — remove um usuário. Somente professores; alunos recebem `403`. Retorna `204`.
 
 ### Posts
 
@@ -222,7 +224,7 @@ A aplicação segue uma arquitetura de camadas:
 - **Use cases**: encapsulam as regras de negócio (CRUD de posts, registro e autenticação de usuários).
 - **Repositórios**: abstraem a persistência com MongoDB via Mongoose.
 - **Entities/Schemas**: definem os modelos `Post` e `User`.
-- **Middleware JWT**: `authenticate` valida o token em todos os endpoints, exceto os ligados ao `User`; `authorize` restringe criação, edição e remoção a usuários caracterizados como professores.
+- **Middleware JWT**: `authenticate` valida o token em todos os endpoints, exceto os ligados ao `User`; `authorize` restringe criação, edição e remoção de posts (e a exclusão de usuários) a professores; `authorizeSelfOrTeacher` permite que alunos consultem e editem apenas o próprio usuário.
 - **Handler global** (`src/utils/global-error.ts`): trata `ZodError`, erros do Mongoose (`CastError`, `ValidationError`), `ResourceNotFoundError`, `UserAlreadyExistsError` e erros HTTP do Express 5.
 
 

@@ -26,8 +26,13 @@ import { list } from '../../../src/http/controllers/user/list'
 import { update } from '../../../src/http/controllers/user/update'
 import { remove } from '../../../src/http/controllers/user/remove'
 
-const makeRes = () => {
-  const res = { status: vi.fn().mockReturnThis(), json: vi.fn(), send: vi.fn() }
+const makeRes = (user: object = { isTeacher: true }) => {
+  const res = {
+    status: vi.fn().mockReturnThis(),
+    json: vi.fn(),
+    send: vi.fn(),
+    locals: { user },
+  }
   return res as unknown as Response & typeof res
 }
 
@@ -72,6 +77,47 @@ describe('user controllers', () => {
     handlers.remove.mockResolvedValue({})
     const res = makeRes()
     await remove({ params: { id: '1' } } as unknown as Request, res)
+    expect(res.status).toHaveBeenCalledWith(204)
+  })
+
+  it('list como aluno deve retornar somente ele mesmo', async () => {
+    handlers.get.mockResolvedValue({ username: 'aluno' })
+    handlers.list.mockClear()
+    const res = makeRes({ id: 'abc', isTeacher: false })
+    await list({ query: {} } as unknown as Request, res)
+    expect(handlers.get).toHaveBeenCalledWith('abc')
+    expect(handlers.list).not.toHaveBeenCalled()
+    expect(res.json).toHaveBeenCalledWith({
+      success: true,
+      count: 1,
+      data: [{ username: 'aluno' }],
+    })
+  })
+
+  it('list como aluno sem id no token deve retornar 403', async () => {
+    const res = makeRes({ isTeacher: false })
+    await list({ query: {} } as unknown as Request, res)
+    expect(res.status).toHaveBeenCalledWith(403)
+  })
+
+  it('update como aluno não pode alterar isTeacher', async () => {
+    handlers.update.mockClear()
+    const res = makeRes({ id: '1', isTeacher: false })
+    await update(
+      { params: { id: '1' }, body: { isTeacher: true } } as unknown as Request,
+      res,
+    )
+    expect(res.status).toHaveBeenCalledWith(403)
+    expect(handlers.update).not.toHaveBeenCalled()
+  })
+
+  it('update como aluno pode alterar os próprios dados', async () => {
+    handlers.update.mockResolvedValue({})
+    const res = makeRes({ id: '1', isTeacher: false })
+    await update(
+      { params: { id: '1' }, body: { username: 'novo' } } as unknown as Request,
+      res,
+    )
     expect(res.status).toHaveBeenCalledWith(204)
   })
 })
